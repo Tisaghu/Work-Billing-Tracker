@@ -1,94 +1,20 @@
 
-# Work Billing Tracker: Track minutes worked per day, sum totals, and save to CSV
 
-import csv
-import calendar
-from datetime import date, datetime, timedelta
-from typing import List, Tuple
-5
-def get_week_range(target_date: date) -> Tuple[date, date]:
-    """
-    Returns the start (Monday) and end (Sunday) date of the week containing target_date.
-    """
-    start = target_date - timedelta(days=target_date.weekday())  # Monday
-    end = start + timedelta(days=6)  # Sunday
-    return start, end
+# Work Billing Tracker: Main CLI and high-level flow
+# Now imports logic from models.py, storage.py, and calculations.py for clarity and maintainability
 
-def get_month_range(target_date: date) -> Tuple[date, date]:
-    """
-    Returns the first and last date of the month containing target_date.
-    """
-    first = target_date.replace(day=1)
-    last_day = calendar.monthrange(target_date.year, target_date.month)[1]
-    last = target_date.replace(day=last_day)
-    return first, last
-
-def get_weekdays_in_range(start_date: date, end_date: date) -> List[date]:
-    """
-    Returns a list of all weekdays (Mon-Fri) between start_date and end_date, inclusive.
-    """
-    days = []
-    current = start_date
-    while current <= end_date:
-        if current.weekday() < 5:  # 0=Mon, 4=Fri
-            days.append(current)
-        current += timedelta(days=1)
-    return days
-
-def get_total_minutes_for_range(chunks: List['WorkChunk'], start_date: date, end_date: date) -> int:
-    """
-    Sums all minutes for entries between start_date and end_date, inclusive.
-    """
-    return sum(chunk.minutes for chunk in chunks if start_date <= chunk.chunk_date <= end_date)
-
-class WorkChunk:
-    """
-    Represents a chunk of work (in minutes) billed to a specific date.
-    """
-    def __init__(self, chunk_date: date, minutes: int, description: str = ""):
-        self.chunk_date = chunk_date
-        self.minutes = minutes
-        self.description = description
-
-    def to_csv_row(self) -> List[str]:
-        """Convert to a list of strings for CSV writing."""
-        return [self.chunk_date.isoformat(), str(self.minutes), self.description]
-
-    @staticmethod
-    def from_csv_row(row: List[str]) -> 'WorkChunk':
-        chunk_date = datetime.strptime(row[0], '%Y-%m-%d').date()
-        minutes = int(row[1])
-        description = row[2] if len(row) > 2 else ""
-        return WorkChunk(chunk_date, minutes, description)
-
-def save_chunks_to_csv(chunks: List[WorkChunk], filename: str = 'work_chunks.csv'):
-    """Save all work chunks to a CSV file."""
-    with open(filename, mode='w', newline='', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        writer.writerow(['Date', 'Minutes', 'Description'])
-        for chunk in chunks:
-            writer.writerow(chunk.to_csv_row())
-
-def load_chunks_from_csv(filename: str = 'work_chunks.csv') -> List[WorkChunk]:
-    """Load all work chunks from a CSV file."""
-    chunks = []
-    try:
-        with open(filename, mode='r', newline='', encoding='utf-8') as f:
-            reader = csv.reader(f)
-            next(reader)  # Skip header
-            for row in reader:
-                chunks.append(WorkChunk.from_csv_row(row))
-    except FileNotFoundError:
-        pass  # No data yet
-    return chunks
-
-def get_total_minutes_for_day(chunks: List[WorkChunk], target_date: date) -> int:
-    """Sum all minutes for a specific date."""
-    return sum(chunk.minutes for chunk in chunks if chunk.chunk_date == target_date)
+from datetime import date, datetime
+from models import WorkChunk
+from storage import save_chunks_to_csv, load_chunks_from_csv
+from calculations import (
+    get_week_range, get_month_range, get_weekdays_in_range,
+    get_total_minutes_for_range, get_total_minutes_for_day
+)
 
 def main():
     """
-    Main loop for the billing tracker.
+    Main loop for the billing tracker. Handles user interaction and high-level flow.
+    All business logic, data models, and storage are imported from separate modules.
     """
     print("Welcome to the Work Billing Tracker!")
     chunks = load_chunks_from_csv()
@@ -188,7 +114,6 @@ def main():
             total = get_total_minutes_for_day(chunks, target_date)
             print(f"Total minutes billed for {target_date}: {total} (Target: 480)")
 
-
         elif choice == '5':
             # --- Show week/month progress ---
             print("\n1. Show week progress")
@@ -217,6 +142,7 @@ def main():
             break
         else:
             print("Invalid option. Please select 1-6.")
+
 
 if __name__ == "__main__":
     main()
