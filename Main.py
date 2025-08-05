@@ -2,8 +2,44 @@
 # Work Billing Tracker: Track minutes worked per day, sum totals, and save to CSV
 
 import csv
-from datetime import date, datetime
-from typing import List
+import calendar
+from datetime import date, datetime, timedelta
+from typing import List, Tuple
+5
+def get_week_range(target_date: date) -> Tuple[date, date]:
+    """
+    Returns the start (Monday) and end (Sunday) date of the week containing target_date.
+    """
+    start = target_date - timedelta(days=target_date.weekday())  # Monday
+    end = start + timedelta(days=6)  # Sunday
+    return start, end
+
+def get_month_range(target_date: date) -> Tuple[date, date]:
+    """
+    Returns the first and last date of the month containing target_date.
+    """
+    first = target_date.replace(day=1)
+    last_day = calendar.monthrange(target_date.year, target_date.month)[1]
+    last = target_date.replace(day=last_day)
+    return first, last
+
+def get_weekdays_in_range(start_date: date, end_date: date) -> List[date]:
+    """
+    Returns a list of all weekdays (Mon-Fri) between start_date and end_date, inclusive.
+    """
+    days = []
+    current = start_date
+    while current <= end_date:
+        if current.weekday() < 5:  # 0=Mon, 4=Fri
+            days.append(current)
+        current += timedelta(days=1)
+    return days
+
+def get_total_minutes_for_range(chunks: List['WorkChunk'], start_date: date, end_date: date) -> int:
+    """
+    Sums all minutes for entries between start_date and end_date, inclusive.
+    """
+    return sum(chunk.minutes for chunk in chunks if start_date <= chunk.chunk_date <= end_date)
 
 class WorkChunk:
     """
@@ -52,7 +88,7 @@ def get_total_minutes_for_day(chunks: List[WorkChunk], target_date: date) -> int
 
 def main():
     """
-    Main loop for the billing tracker. (Stub for now)
+    Main loop for the billing tracker.
     """
     print("Welcome to the Work Billing Tracker!")
     chunks = load_chunks_from_csv()
@@ -62,8 +98,9 @@ def main():
         print("2. View all entries for a day")
         print("3. Delete an entry")
         print("4. Show total minutes for a day")
-        print("5. Exit")
-        choice = input("Select an option (1-5): ").strip()
+        print("5. Show week/month progress")
+        print("6. Exit")
+        choice = input("Select an option (1-6): ").strip()
 
         if choice == '1':
             date_str = input("Enter date (YYYY-MM-DD, blank for today): ").strip()
@@ -151,11 +188,35 @@ def main():
             total = get_total_minutes_for_day(chunks, target_date)
             print(f"Total minutes billed for {target_date}: {total} (Target: 480)")
 
+
         elif choice == '5':
+            # --- Show week/month progress ---
+            print("\n1. Show week progress")
+            print("2. Show month progress")
+            sub_choice = input("Select (1-2, blank for week): ").strip()
+            today = date.today()
+            if sub_choice == '2':
+                # Month progress
+                start, end = get_month_range(today)
+                period = 'month'
+            else:
+                # Default to week progress
+                start, end = get_week_range(today)
+                period = 'week'
+            weekdays = get_weekdays_in_range(start, end)
+            required = len(weekdays) * 480
+            billed = get_total_minutes_for_range(chunks, start, end)
+            remaining = required - billed
+            print(f"\n{period.capitalize()} {start} to {end}:")
+            print(f"  Required: {required} min ({required/60:.2f} hrs)")
+            print(f"  Billed:   {billed} min ({billed/60:.2f} hrs)")
+            print(f"  Remaining:{remaining} min ({remaining/60:.2f} hrs)")
+
+        elif choice == '6':
             print("Goodbye!")
             break
         else:
-            print("Invalid option. Please select 1-5.")
+            print("Invalid option. Please select 1-6.")
 
 if __name__ == "__main__":
     main()
