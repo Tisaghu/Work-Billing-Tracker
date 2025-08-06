@@ -24,19 +24,24 @@ def add_minutes(chunks):
         except ValueError:
             print("Invalid date format.")
             return
+    minutes_input = input("Enter minutes to add (e.g. 20+30+15): ").strip()
+    if not minutes_input:
+        print("No minutes entered.")
+        return
     try:
-        minutes = int(input("Enter minutes to add: ").strip())
-        if minutes <= 0:
-            print("Minutes must be positive.")
-            return
+        minute_chunks = [int(m.strip()) for m in minutes_input.split('+')]
     except ValueError:
-        print("Invalid number of minutes.")
+        print("Invalid input. Please enter numbers separated by '+'.")
+        return
+    if any(m <= 0 for m in minute_chunks):
+        print("All minute values must be positive.")
         return
     description = input("Optional description (ticket, etc): ").strip()
-    new_chunk = WorkChunk(chunk_date, minutes, description)
-    chunks.append(new_chunk)
+    for m in minute_chunks:
+        new_chunk = WorkChunk(chunk_date, m, description)
+        chunks.append(new_chunk)
     save_chunks_to_csv(chunks)
-    print(f"Added {minutes} minutes for {chunk_date}.")
+    print(f"Added {len(minute_chunks)} chunk(s) for {chunk_date}: {minute_chunks}")
 
 def view_entries(chunks):
     date_str = input("Enter date to view (YYYY-MM-DD, blank for today): ").strip()
