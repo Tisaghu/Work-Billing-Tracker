@@ -10,6 +10,70 @@ from datetime import date
 from models import WorkChunk
 from storage import load_chunks_from_csv, save_chunks_to_csv
 
+from PyQt5.QtWidgets import (
+    QDialog, QVBoxLayout, QLineEdit, QPushButton,
+    QLabel, QListWidget, QHBoxLayout
+)
+
+class AddTimeDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Add Time Chunks")
+        self.resize(300, 300)
+
+        self.minutes = []
+
+        self.layout = QVBoxLayout()
+        self.input_field = QLineEdit()
+        self.input_field.setPlaceholderText("Enter minutes and press Add or Enter")
+        self.chunk_list = QListWidget()
+
+        self.add_button = QPushButton("Add")
+        self.clear_button = QPushButton("Clear")
+        self.done_button = QPushButton("Done")
+
+        btn_layout = QHBoxLayout()
+        btn_layout.addWidget(self.add_button)
+        btn_layout.addWidget(self.clear_button)
+        btn_layout.addWidget(self.done_button)
+
+        self.layout.addWidget(QLabel("Enter time chunks (in minutes):"))
+        self.layout.addWidget(self.input_field)
+        self.layout.addWidget(self.chunk_list)
+        self.layout.addLayout(btn_layout)
+        self.setLayout(self.layout)
+
+        # Connect buttons and input field
+        self.add_button.clicked.connect(self.add_chunk)
+        self.clear_button.clicked.connect(self.clear_chunks)
+        self.done_button.clicked.connect(self.accept)
+        self.input_field.returnPressed.connect(self.add_chunk)
+
+    def add_chunk(self):
+        text = self.input_field.text().strip()
+        if not text:
+            return
+        try:
+            minutes = int(text)
+            if minutes <= 0:
+                raise ValueError
+        except ValueError:
+            self.input_field.setText("")
+            self.input_field.setPlaceholderText("Invalid! Enter a positive number")
+            return
+
+        self.minutes.append(minutes)
+        self.chunk_list.addItem(f"{minutes} min")
+        self.input_field.clear()
+
+    def clear_chunks(self):
+        self.minutes.clear()
+        self.chunk_list.clear()
+
+    def get_minutes(self):
+        return self.minutes
+
+
 class BillingTrackerGUI(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -64,23 +128,23 @@ class BillingTrackerGUI(QMainWindow):
         self.status_label.setText(f"Entries for {self.current_date} ({count}):")
 
     def add_time_entry(self):
-        text, ok = QInputDialog.getText(self, "Add Time", "Enter minutes (e.g. 20+30+15):")
-        if not ok or not text.strip():
+        dialog = AddTimeDialog()
+        if dialog.exec_() != QDialog.Accepted:
             return
 
-        try:
-            minute_chunks = [int(m.strip()) for m in text.split('+')]
-            if any(m <= 0 for m in minute_chunks):
-                raise ValueError("Minutes must be positive.")
-        except Exception as e:
-            QMessageBox.critical(self, "Invalid Input", f"Error: {e}")
+        minute_chunks = dialog.get_minutes()
+        if not minute_chunks:
             return
 
-        desc, _ = QInputDialog.getText(self, "Description", "Optional description:")
+        desc, ok = QInputDialog.getText(self, "Description", "Optional description:")
+        if not ok:
+            return
+
         for m in minute_chunks:
             self.chunks.append(WorkChunk(self.current_date, m, desc.strip()))
         save_chunks_to_csv(self.chunks)
         self.refresh_entries()
+
 
     def delete_selected_entry(self):
         selected_items = self.entry_list.selectedItems()
