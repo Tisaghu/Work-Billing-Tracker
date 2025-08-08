@@ -176,8 +176,6 @@ class BillingTrackerGUI(QMainWindow):
 
     def refresh_entries(self):
         """Reload chunks from disk (CSV) and update the entries list + stats."""
-        # reload authoritative data from CSV via your storage helper
-        # this ensures GUI always reflects the file on disk (single source of truth)
         self.chunks = load_chunks_from_csv()
 
         # clear UI list and compute stats
@@ -196,7 +194,7 @@ class BillingTrackerGUI(QMainWindow):
             # chunk.chunk_date expected to be a date object (from load_chunks_from_csv)
             # show entries for currently selected date (left list)
             if chunk.chunk_date == self.current_date:
-                self.entry_list.addItem(f"{chunk.minutes} min - {chunk.description}")
+                self.entry_list.addItem(f"ID:{chunk.chunk_id}, {chunk.minutes} min - {chunk.description}")
                 count_for_selected_date += 1
 
             # accumulate stats (always compare to today's date for "today/week/month")
@@ -228,14 +226,24 @@ class BillingTrackerGUI(QMainWindow):
         if not ok:
             return
 
-        # Make sure we have the latest data from disk before appending
-        self.chunks = load_chunks_from_csv()
+        # Load existing chunks to find max ID
+        existing_chunks = load_chunks_from_csv()
+        if existing_chunks:
+            max_id = max(int(c.chunk_id) for c in existing_chunks)
+        else:
+            max_id = 0
 
+
+        # Build *only* the new chunks
+        new_chunks = []
         for m in minute_chunks:
-            self.chunks.append(WorkChunk(self.current_date, m, desc.strip()))
-        save_chunks_to_csv(self.chunks)
+            max_id += 1
+            new_chunks.append(WorkChunk(str(max_id),self.current_date, m, desc.strip()))
 
-        # reload from disk and refresh UI/stats
+        # Append these new chunks to the CSV
+        save_chunks_to_csv(new_chunks, append=True)
+
+        # Refresh UI from disk
         self.refresh_entries()
 
     def delete_selected_entry(self):
@@ -245,25 +253,22 @@ class BillingTrackerGUI(QMainWindow):
             return
 
         selected_text = selected_items[0].text()
-        minutes_str, _, desc = selected_text.partition(" min - ")
-        try:
-            minutes = int(minutes_str.strip())
-        except ValueError:
-            QMessageBox.warning(self, "Parse error", "Couldn't parse selected entry.")
-            return
+        #minutes_str, _, desc = selected_text.partition(" min - ")
+        id_to_delete = int(selected_text.split(',')[0].split(':')[1])
 
-        # Reload authoritative chunks from disk to ensure sync
+        # Reload authoritative chunks from disk
         self.chunks = load_chunks_from_csv()
 
         # Find matching chunk (first match)
         for i, chunk in enumerate(self.chunks):
-            if chunk.chunk_date == self.current_date and chunk.minutes == minutes and chunk.description == desc:
+            if chunk.chunk_id == str(id_to_delete):
                 del self.chunks[i]
-                save_chunks_to_csv(self.chunks)
+
+                #Overwrite file with updated chunk list (no duplicates)
+                save_chunks_to_csv(self.chunks, append=False)
                 self.refresh_entries()
                 return
-
-        QMessageBox.information(self, "Not found", "Matching entry not found in CSV.")
+                
 
 def run_gui():
     app = QApplication(sys.argv)
