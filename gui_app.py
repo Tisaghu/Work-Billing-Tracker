@@ -1,19 +1,68 @@
+# gui_app.py
 import sys
+from datetime import date, datetime, timedelta
+
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget,
-    QVBoxLayout, QCalendarWidget, QLabel,
-    QPushButton, QListWidget, QInputDialog, QMessageBox
+    QVBoxLayout, QHBoxLayout, QCalendarWidget,
+    QLabel, QPushButton, QListWidget, QInputDialog, QMessageBox,
+    QDialog, QLineEdit
 )
-from PyQt5.QtCore import QDate
-from datetime import date
+from PyQt5.QtCore import QDate, Qt
 
 from models import WorkChunk
 from storage import load_chunks_from_csv, save_chunks_to_csv
 
-from PyQt5.QtWidgets import (
-    QDialog, QVBoxLayout, QLineEdit, QPushButton,
-    QLabel, QListWidget, QHBoxLayout
-)
+# Constants
+DAILY_GOAL = 480  # minutes per workday
+
+
+class StatsPanel(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+        # Create labels for each stat and store them for easy updates
+        self.billed_today_label = QLabel("Billed today: 0 min")
+        self.billed_week_label = QLabel("Billed this week: 0 min")
+        self.billed_month_label = QLabel("Billed this month: 0 min")
+        self.goal_percent_label = QLabel("Weekly goal completion: 0%")
+        self.minutes_remaining_label = QLabel("Minutes remaining: 0")
+
+        # Make them look neat
+        for lbl in [
+            self.billed_today_label,
+            self.billed_week_label,
+            self.billed_month_label,
+            self.goal_percent_label,
+            self.minutes_remaining_label
+        ]:
+            lbl.setAlignment(Qt.AlignLeft)
+            self.layout.addWidget(lbl)
+
+        self.layout.addStretch()  # Push everything up
+
+    def update_stats(self, billed_today, billed_week, billed_month, weekly_goal_minutes):
+        """Update stats dynamically from your main app.
+
+        Note: weekly percentage is calculated from billed_week / weekly_goal_minutes.
+        """
+        self.billed_today_label.setText(f"Billed today: {billed_today} min")
+        self.billed_week_label.setText(f"Billed this week: {billed_week} min")
+        self.billed_month_label.setText(f"Billed this month: {billed_month} min")
+
+        if weekly_goal_minutes > 0:
+            percent = (billed_week / weekly_goal_minutes) * 100
+            remaining = weekly_goal_minutes - billed_week
+        else:
+            percent = 0
+            remaining = 0
+
+        self.goal_percent_label.setText(f"Weekly goal completion: {percent:.1f}%")
+        self.minutes_remaining_label.setText(f"Minutes remaining: {max(0, remaining)}")
+
 
 class AddTimeDialog(QDialog):
     def __init__(self):
@@ -78,15 +127,17 @@ class BillingTrackerGUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Work Billing Tracker")
-        self.resize(500, 600)
+        self.resize(900, 600)
+        self.stats_panel = StatsPanel()
 
-        # Main data
-        self.chunks = load_chunks_from_csv()
+        # Main data — initially empty; refresh_entries will reload from disk
+        self.chunks = []
         self.current_date = date.today()
 
         # --- Widgets ---
         self.central = QWidget()
-        self.layout = QVBoxLayout()
+        self.main_layout = QHBoxLayout()
+        self.left_layout = QVBoxLayout()
 
         self.calendar = QCalendarWidget()
         self.calendar.setSelectedDate(QDate.currentDate())
@@ -101,16 +152,21 @@ class BillingTrackerGUI(QMainWindow):
         self.add_button.clicked.connect(self.add_time_entry)
         self.delete_button.clicked.connect(self.delete_selected_entry)
 
-        # Add widgets to layout
-        self.layout.addWidget(self.calendar)
-        self.layout.addWidget(self.status_label)
-        self.layout.addWidget(self.entry_list)
-        self.layout.addWidget(self.add_button)
-        self.layout.addWidget(self.delete_button)
+        # Add widgets to left layout
+        self.left_layout.addWidget(self.calendar)
+        self.left_layout.addWidget(self.status_label)
+        self.left_layout.addWidget(self.entry_list)
+        self.left_layout.addWidget(self.add_button)
+        self.left_layout.addWidget(self.delete_button)
 
-        self.central.setLayout(self.layout)
+        # Add left and right (stats) panels to main layout
+        self.main_layout.addLayout(self.left_layout, stretch=3)
+        self.main_layout.addWidget(self.stats_panel, stretch=1)
+
+        self.central.setLayout(self.main_layout)
         self.setCentralWidget(self.central)
 
+        # initial load
         self.refresh_entries()
 
     def on_date_changed(self):
@@ -119,13 +175,45 @@ class BillingTrackerGUI(QMainWindow):
         self.refresh_entries()
 
     def refresh_entries(self):
+        """Reload chunks from disk (CSV) and update the entries list + stats."""
+        # reload authoritative data from CSV via your storage helper
+        # this ensures GUI always reflects the file on disk (single source of truth)
+        self.chunks = load_chunks_from_csv()
+
+        # clear UI list and compute stats
         self.entry_list.clear()
-        count = 0
+        count_for_selected_date = 0
+        billed_today = 0
+        billed_week = 0
+        billed_month = 0
+
+        today = date.today()
+        # Monday is weekday() == 0. Work week is Mon-Fri -> week_end = Monday + 4 days
+        week_start = today - timedelta(days=today.weekday())
+        week_end = week_start + timedelta(days=4)
+
         for chunk in self.chunks:
+            # chunk.chunk_date expected to be a date object (from load_chunks_from_csv)
+            # show entries for currently selected date (left list)
             if chunk.chunk_date == self.current_date:
                 self.entry_list.addItem(f"{chunk.minutes} min - {chunk.description}")
-                count += 1
-        self.status_label.setText(f"Entries for {self.current_date} ({count}):")
+                count_for_selected_date += 1
+
+            # accumulate stats (always compare to today's date for "today/week/month")
+            if chunk.chunk_date == today:
+                billed_today += chunk.minutes
+            if week_start <= chunk.chunk_date <= week_end:
+                billed_week += chunk.minutes
+            if chunk.chunk_date.year == today.year and chunk.chunk_date.month == today.month:
+                billed_month += chunk.minutes
+
+        self.status_label.setText(f"Entries for {self.current_date} ({count_for_selected_date}):")
+
+        # Weekly goal (5 workdays)
+        weekly_goal = DAILY_GOAL * 5
+
+        # Update the right-hand stats panel
+        self.stats_panel.update_stats(billed_today, billed_week, billed_month, weekly_goal)
 
     def add_time_entry(self):
         dialog = AddTimeDialog()
@@ -140,11 +228,15 @@ class BillingTrackerGUI(QMainWindow):
         if not ok:
             return
 
+        # Make sure we have the latest data from disk before appending
+        self.chunks = load_chunks_from_csv()
+
         for m in minute_chunks:
             self.chunks.append(WorkChunk(self.current_date, m, desc.strip()))
         save_chunks_to_csv(self.chunks)
-        self.refresh_entries()
 
+        # reload from disk and refresh UI/stats
+        self.refresh_entries()
 
     def delete_selected_entry(self):
         selected_items = self.entry_list.selectedItems()
@@ -153,10 +245,17 @@ class BillingTrackerGUI(QMainWindow):
             return
 
         selected_text = selected_items[0].text()
-        minutes, _, desc = selected_text.partition(" min - ")
-        minutes = int(minutes.strip())
+        minutes_str, _, desc = selected_text.partition(" min - ")
+        try:
+            minutes = int(minutes_str.strip())
+        except ValueError:
+            QMessageBox.warning(self, "Parse error", "Couldn't parse selected entry.")
+            return
 
-        # Find matching chunk (first match only)
+        # Reload authoritative chunks from disk to ensure sync
+        self.chunks = load_chunks_from_csv()
+
+        # Find matching chunk (first match)
         for i, chunk in enumerate(self.chunks):
             if chunk.chunk_date == self.current_date and chunk.minutes == minutes and chunk.description == desc:
                 del self.chunks[i]
@@ -164,11 +263,14 @@ class BillingTrackerGUI(QMainWindow):
                 self.refresh_entries()
                 return
 
+        QMessageBox.information(self, "Not found", "Matching entry not found in CSV.")
+
 def run_gui():
     app = QApplication(sys.argv)
     window = BillingTrackerGUI()
     window.show()
     sys.exit(app.exec_())
+
 
 if __name__ == "__main__":
     run_gui()
