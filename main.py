@@ -12,115 +12,11 @@ from PyQt5.QtCore import QDate, Qt
 
 from models import WorkChunk
 from storage import load_chunks_from_csv, save_chunks_to_csv
+from stats_panel import StatsPanel
+from add_time_dialog import AddTimeDialog
 
 # Constants
 DAILY_GOAL = 480  # minutes per workday
-
-
-class StatsPanel(QWidget):
-    def __init__(self):
-        super().__init__()
-
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-
-        # Create labels for each stat and store them for easy updates
-        self.billed_today_label = QLabel("Billed today: 0 min")
-        self.billed_week_label = QLabel("Billed this week: 0 min")
-        self.billed_month_label = QLabel("Billed this month: 0 min")
-        self.goal_percent_label = QLabel("Weekly goal completion: 0%")
-        self.minutes_remaining_label = QLabel("Minutes remaining: 0")
-
-        # Make them look neat
-        for lbl in [
-            self.billed_today_label,
-            self.billed_week_label,
-            self.billed_month_label,
-            self.goal_percent_label,
-            self.minutes_remaining_label
-        ]:
-            lbl.setAlignment(Qt.AlignLeft)
-            self.layout.addWidget(lbl)
-
-        self.layout.addStretch()  # Push everything up
-
-    def update_stats(self, billed_today, billed_week, billed_month, weekly_goal_minutes):
-        """Update stats dynamically from your main app.
-
-        Note: weekly percentage is calculated from billed_week / weekly_goal_minutes.
-        """
-        self.billed_today_label.setText(f"Billed today: {billed_today} min")
-        self.billed_week_label.setText(f"Billed this week: {billed_week} min")
-        self.billed_month_label.setText(f"Billed this month: {billed_month} min")
-
-        if weekly_goal_minutes > 0:
-            percent = (billed_week / weekly_goal_minutes) * 100
-            remaining = weekly_goal_minutes - billed_week
-        else:
-            percent = 0
-            remaining = 0
-
-        self.goal_percent_label.setText(f"Weekly goal completion: {percent:.1f}%")
-        self.minutes_remaining_label.setText(f"Minutes remaining: {max(0, remaining)}")
-
-
-class AddTimeDialog(QDialog):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Add Time Chunks")
-        self.resize(300, 300)
-
-        self.minutes = []
-
-        self.layout = QVBoxLayout()
-        self.input_field = QLineEdit()
-        self.input_field.setPlaceholderText("Enter minutes and press Add or Enter")
-        self.chunk_list = QListWidget()
-
-        self.add_button = QPushButton("Add")
-        self.clear_button = QPushButton("Clear")
-        self.done_button = QPushButton("Done")
-
-        btn_layout = QHBoxLayout()
-        btn_layout.addWidget(self.add_button)
-        btn_layout.addWidget(self.clear_button)
-        btn_layout.addWidget(self.done_button)
-
-        self.layout.addWidget(QLabel("Enter time chunks (in minutes):"))
-        self.layout.addWidget(self.input_field)
-        self.layout.addWidget(self.chunk_list)
-        self.layout.addLayout(btn_layout)
-        self.setLayout(self.layout)
-
-        # Connect buttons and input field
-        self.add_button.clicked.connect(self.add_chunk)
-        self.clear_button.clicked.connect(self.clear_chunks)
-        self.done_button.clicked.connect(self.accept)
-        self.input_field.returnPressed.connect(self.add_chunk)
-
-    def add_chunk(self):
-        text = self.input_field.text().strip()
-        if not text:
-            return
-        try:
-            minutes = int(text)
-            if minutes <= 0:
-                raise ValueError
-        except ValueError:
-            self.input_field.setText("")
-            self.input_field.setPlaceholderText("Invalid! Enter a positive number")
-            return
-
-        self.minutes.append(minutes)
-        self.chunk_list.addItem(f"{minutes} min")
-        self.input_field.clear()
-
-    def clear_chunks(self):
-        self.minutes.clear()
-        self.chunk_list.clear()
-
-    def get_minutes(self):
-        return self.minutes
 
 
 class BillingTrackerGUI(QMainWindow):
