@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (
-     QWidget, QVBoxLayout, QLabel, 
+     QWidget, QVBoxLayout, QLabel, QFrame,
 )
 
 from PyQt5.QtCore import Qt
@@ -12,33 +12,73 @@ class StatsPanel(QWidget):
         self.setLayout(self.layout)
 
         # Create labels for each stat and store them for easy updates
-        self.billed_today_label = QLabel("Billed today: 0/0 min")
-        self.billed_week_label = QLabel("Billed this week: 0/0 min")
-        self.billed_month_label = QLabel("Billed this month: 0/0 min")
+        self.billed_today_minutes_label = QLabel("Billed today: 0/0 min")
+        self.billed_today_hours_label = QLabel("Billed today: 0/0 hours")
+        self.today_percent_label = QLabel("Daily goal completion: 0%")
+
+        self.billed_week_minutes_label = QLabel("Billed this week: 0/0 min")
+        self.billed_week_hours_label = QLabel("Billed this week: 0/0 hours")
+        self.week_percent_label = QLabel("Weekly goal completion: 0%")
+
+        self.billed_month_minutes_label = QLabel("Billed this month: 0/0 min")
+        self.billed_month_hours_label = QLabel("Billed this month: 0/0 hours")
+        self.month_percent_label = QLabel("Monthly goal completion: 0%")
+
         self.goal_percent_label = QLabel("Weekly goal completion: 0%")
         self.minutes_remaining_label = QLabel("Minutes remaining: 0")
 
+        # Create separators
+        today_separator = QFrame()
+        week_separator = QFrame()
+        month_separator = QFrame()
+
+        for seperator in [
+            today_separator,
+            week_separator,
+            month_separator
+        ]:
+            seperator.setFrameShape(QFrame.HLine)
+            seperator.setFrameShadow(QFrame.Sunken)
+
         # Make them look neat
         for lbl in [
-            self.billed_today_label,
-            self.billed_week_label,
-            self.billed_month_label,
-            self.goal_percent_label,
+            self.billed_today_minutes_label,
+            self.billed_today_hours_label,
+            self.today_percent_label,
+            today_separator,
+
+            self.billed_week_minutes_label,
+            self.billed_week_hours_label,
+            self.week_percent_label,
+            week_separator,
+
+            self.billed_month_minutes_label,
+            self.billed_month_hours_label,
+            self.month_percent_label,
+            month_separator,
+
+            #self.goal_percent_label,
             self.minutes_remaining_label
         ]:
-            lbl.setAlignment(Qt.AlignLeft)
+            #lbl.setAlignment(Qt.AlignLeft)
             self.layout.addWidget(lbl)
 
         self.layout.addStretch()  # Push everything up
 
     def update_stats(self, billed_today, billed_week, billed_month, today_goal, week_goal, month_goal):
         """
-        Update stats dynamically from your main app.
+        Update stats dynamically from the main app.
         Shows billed/goal for today, week, and month.
         """
-        self.billed_today_label.setText(f"Billed today: {billed_today}/{today_goal} min")
-        self.billed_week_label.setText(f"Billed this week: {billed_week}/{week_goal} min")
-        self.billed_month_label.setText(f"Billed this month: {billed_month}/{month_goal} min")
+        self.billed_today_minutes_label.setText(f"Billed today: {billed_today}/{today_goal} min")
+        self.billed_today_hours_label.setText(f"Billed today: {billed_today/60:.1f}/{today_goal/60} hours")
+        #self.daily_percent_label.setText(f"Daily goal completion: {daily_percent:.1f}%")
+
+        self.billed_week_minutes_label.setText(f"Billed this week: {billed_week}/{week_goal} min")
+        self.billed_week_hours_label.setText(f"Billed this week: {billed_week/60:.1f}/{week_goal/60} hours")
+
+        self.billed_month_minutes_label.setText(f"Billed this month: {billed_month}/{month_goal} min")
+        self.billed_month_hours_label.setText(f"Billed this month: {billed_month/60:.1f}/{month_goal/60} hours")
 
         # Weekly percent and remaining
         if week_goal > 0:

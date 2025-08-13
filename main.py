@@ -1,14 +1,14 @@
 # gui_app.py
 import sys
-from datetime import date, datetime, timedelta
+from datetime import date
 
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget,
     QVBoxLayout, QHBoxLayout, QCalendarWidget,
     QLabel, QPushButton, QListWidget, QInputDialog, QMessageBox,
-    QDialog, QLineEdit
+    QDialog
 )
-from PyQt5.QtCore import QDate, Qt
+from PyQt5.QtCore import QDate
 
 from models import WorkChunk
 from storage import load_chunks_from_csv, save_chunks_to_csv
@@ -49,16 +49,20 @@ class BillingTrackerGUI(QMainWindow):
         self.delete_button.clicked.connect(self.delete_selected_entry)
 
         # Add widgets to left layout
-        self.left_layout.addWidget(self.calendar)
-        self.left_layout.addWidget(self.status_label)
-        self.left_layout.addWidget(self.entry_list)
-        self.left_layout.addWidget(self.add_button)
-        self.left_layout.addWidget(self.delete_button)
+        for widget in [
+            self.calendar,
+            self.status_label,
+            self.entry_list,
+            self.add_button,
+            self.delete_button
+        ]:
+            self.left_layout.addWidget(widget)
 
         # Add left and right (stats) panels to main layout
         self.main_layout.addLayout(self.left_layout, stretch=3)
         self.main_layout.addWidget(self.stats_panel, stretch=1)
-
+        
+        # Set central layout
         self.central.setLayout(self.main_layout)
         self.setCentralWidget(self.central)
 
@@ -155,7 +159,6 @@ class BillingTrackerGUI(QMainWindow):
             return
 
         selected_text = selected_items[0].text()
-        #minutes_str, _, desc = selected_text.partition(" min - ")
         id_to_delete = int(selected_text.split(',')[0].split(':')[1])
 
         # Reload authoritative chunks from disk
