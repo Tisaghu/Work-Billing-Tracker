@@ -72,6 +72,8 @@ class BillingTrackerGUI(QMainWindow):
 
     def refresh_entries(self):
         """Reload chunks from disk (CSV) and update the entries list + stats."""
+        from calculations import get_week_range, get_month_range, get_weekdays_in_range
+
         self.chunks = load_chunks_from_csv()
 
         # clear UI list and compute stats
@@ -82,9 +84,8 @@ class BillingTrackerGUI(QMainWindow):
         billed_month = 0
 
         today = date.today()
-        # Monday is weekday() == 0. Work week is Mon-Fri -> week_end = Monday + 4 days
-        week_start = today - timedelta(days=today.weekday())
-        week_end = week_start + timedelta(days=4)
+        week_start, week_end = get_week_range(today)
+        month_start, month_end = get_month_range(today)
 
         for chunk in self.chunks:
             # chunk.chunk_date expected to be a date object (from load_chunks_from_csv)
@@ -98,16 +99,21 @@ class BillingTrackerGUI(QMainWindow):
                 billed_today += chunk.minutes
             if week_start <= chunk.chunk_date <= week_end:
                 billed_week += chunk.minutes
-            if chunk.chunk_date.year == today.year and chunk.chunk_date.month == today.month:
+            if month_start <= chunk.chunk_date <= month_end:
                 billed_month += chunk.minutes
 
         self.status_label.setText(f"Entries for {self.current_date} ({count_for_selected_date}):")
 
-        # Weekly goal (5 workdays)
-        weekly_goal = DAILY_GOAL * 5
+        # Calculate goals
+        today_goal = DAILY_GOAL
+        week_goal = DAILY_GOAL * len(get_weekdays_in_range(week_start, week_end))
+        month_goal = DAILY_GOAL * len(get_weekdays_in_range(month_start, month_end))
 
         # Update the right-hand stats panel
-        self.stats_panel.update_stats(billed_today, billed_week, billed_month, weekly_goal)
+        self.stats_panel.update_stats(
+            billed_today, billed_week, billed_month,
+            today_goal, week_goal, month_goal
+        )
 
     def add_time_entry(self):
         dialog = AddTimeDialog()

@@ -12,9 +12,9 @@ class StatsPanel(QWidget):
         self.setLayout(self.layout)
 
         # Create labels for each stat and store them for easy updates
-        self.billed_today_label = QLabel("Billed today: 0 min")
-        self.billed_week_label = QLabel("Billed this week: 0 min")
-        self.billed_month_label = QLabel("Billed this month: 0 min")
+        self.billed_today_label = QLabel("Billed today: 0/0 min")
+        self.billed_week_label = QLabel("Billed this week: 0/0 min")
+        self.billed_month_label = QLabel("Billed this month: 0/0 min")
         self.goal_percent_label = QLabel("Weekly goal completion: 0%")
         self.minutes_remaining_label = QLabel("Minutes remaining: 0")
 
@@ -31,21 +31,21 @@ class StatsPanel(QWidget):
 
         self.layout.addStretch()  # Push everything up
 
-    def update_stats(self, billed_today, billed_week, billed_month, weekly_goal_minutes):
-        """Update stats dynamically from your main app.
-
-        Note: weekly percentage is calculated from billed_week / weekly_goal_minutes.
+    def update_stats(self, billed_today, billed_week, billed_month, today_goal, week_goal, month_goal):
         """
-        self.billed_today_label.setText(f"Billed today: {billed_today} min")
-        self.billed_week_label.setText(f"Billed this week: {billed_week} min")
-        self.billed_month_label.setText(f"Billed this month: {billed_month} min")
+        Update stats dynamically from your main app.
+        Shows billed/goal for today, week, and month.
+        """
+        self.billed_today_label.setText(f"Billed today: {billed_today}/{today_goal} min")
+        self.billed_week_label.setText(f"Billed this week: {billed_week}/{week_goal} min")
+        self.billed_month_label.setText(f"Billed this month: {billed_month}/{month_goal} min")
 
-        if weekly_goal_minutes > 0:
-            percent = (billed_week / weekly_goal_minutes) * 100
-            remaining = weekly_goal_minutes - billed_week
+        # Weekly percent and remaining
+        if week_goal > 0:
+            percent = (billed_week / week_goal) * 100
+            remaining = week_goal - billed_week
         else:
             percent = 0
             remaining = 0
-
         self.goal_percent_label.setText(f"Weekly goal completion: {percent:.1f}%")
-        self.minutes_remaining_label.setText(f"Minutes remaining: {max(0, remaining)}")
+        self.minutes_remaining_label.setText(f"Minutes Remaining For This Week: {max(0, remaining)}")
