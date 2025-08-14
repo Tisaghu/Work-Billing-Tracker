@@ -6,7 +6,7 @@ import os
 from typing import List
 from models import WorkChunk
 
-FILENAME = 'work_chunks.csv'
+FILENAME = os.path.join(os.path.dirname(os.path.dirname(__file__)), "work_chunks.csv")
 
 def save_chunks_to_csv(chunks: List[WorkChunk], filename: str = FILENAME, append: bool = True):
     """Append or overwrite chunks in the CSV file, assigning IDs automatically if needed."""
