@@ -16,7 +16,7 @@ from stats_panel import StatsPanel
 from add_time_dialog import AddTimeDialog
 
 # Constants
-DAILY_GOAL = 480  # minutes per workday
+DAILY_GOAL = 480  # minutes per workday - (Assumes a standard 8 hours - need to account for lunches in the future)
 
 
 class BillingTrackerGUI(QMainWindow):

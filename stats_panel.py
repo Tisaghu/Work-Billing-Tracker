@@ -70,15 +70,21 @@ class StatsPanel(QWidget):
         Update stats dynamically from the main app.
         Shows billed/goal for today, week, and month.
         """
+        # Update today labels
         self.billed_today_minutes_label.setText(f"Billed today: {billed_today}/{today_goal} min")
         self.billed_today_hours_label.setText(f"Billed today: {billed_today/60:.1f}/{today_goal/60} hours")
-        #self.daily_percent_label.setText(f"Daily goal completion: {daily_percent:.1f}%")
+        self.today_percent_label.setText(f"Daily goal completion: {(billed_today/today_goal)*100:.1f}%")
 
+        # Update week labels
         self.billed_week_minutes_label.setText(f"Billed this week: {billed_week}/{week_goal} min")
         self.billed_week_hours_label.setText(f"Billed this week: {billed_week/60:.1f}/{week_goal/60} hours")
+        self.week_percent_label.setText(f"Weekly goal completion: {(billed_week/week_goal)*100:.1f}%")
 
+        # Update month labels
         self.billed_month_minutes_label.setText(f"Billed this month: {billed_month}/{month_goal} min")
         self.billed_month_hours_label.setText(f"Billed this month: {billed_month/60:.1f}/{month_goal/60} hours")
+        self.month_percent_label.setText(f"Monthly goal completion: {(billed_month/month_goal)*100:.1f}%")
+
 
         # Weekly percent and remaining
         if week_goal > 0:
