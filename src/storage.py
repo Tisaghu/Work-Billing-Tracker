@@ -3,10 +3,20 @@
 
 import csv
 import os
+import sys
 from typing import List
 from models import WorkChunk
 
-FILENAME = os.path.join(os.path.dirname(os.path.dirname(__file__)), "work_chunks.csv")
+if getattr(sys, 'frozen', False):
+    # If running as a PyInstaller bundle, get the parent of the .exe (dist/)
+    BASE_DIR = os.path.dirname(os.path.dirname(sys.executable))
+else:
+    # If running as a script, get the project root
+    BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+
+FILENAME = os.path.join(BASE_DIR, "work_chunks.csv")
+
+FILENAME = os.path.join(BASE_DIR, "work_chunks.csv")
 
 def save_chunks_to_csv(chunks: List[WorkChunk], filename: str = FILENAME, append: bool = True):
     """Append or overwrite chunks in the CSV file, assigning IDs automatically if needed."""
