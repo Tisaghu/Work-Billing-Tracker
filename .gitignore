@@ -1,2 +1,6 @@
 work_chunks.csv
 __pycache__
+dist/
+build/
+*.spec
+.env

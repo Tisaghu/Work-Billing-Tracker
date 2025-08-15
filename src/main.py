@@ -1,4 +1,3 @@
-# gui_app.py
 import sys
 from datetime import date
 

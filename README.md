@@ -38,7 +38,7 @@ A professional, extensible tool for tracking your work billing hours, designed f
    ```
 2. Build:
    ```sh
-   pyinstaller --onefile Main.py
+   pyinstaller --onefile src/Main.py
    ```
    The executable will be in the `dist` folder.
 
