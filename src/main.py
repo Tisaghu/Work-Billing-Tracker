@@ -13,6 +13,7 @@ from models import WorkChunk
 from storage import load_chunks_from_csv, save_chunks_to_csv
 from stats_panel import StatsPanel
 from add_time_dialog import AddTimeDialog
+from add_time_panel import AddTimePanel
 
 # Constants
 DAILY_GOAL = 480  # minutes per workday - (Assumes a standard 8 hours - need to account for lunches in the future)
@@ -23,7 +24,10 @@ class BillingTrackerGUI(QMainWindow):
         super().__init__()
         self.setWindowTitle("Work Billing Tracker")
         self.resize(900, 600)
+
+        # Initialize widgets
         self.stats_panel = StatsPanel()
+        self.add_time_panel = AddTimePanel()
 
         # Main data — initially empty; refresh_entries will reload from disk
         self.chunks = []
@@ -33,11 +37,14 @@ class BillingTrackerGUI(QMainWindow):
         self.central = QWidget()
         self.main_layout = QHBoxLayout()
         self.left_layout = QVBoxLayout()
+        self.right_layout = QVBoxLayout()
 
+        # Create calendar widget
         self.calendar = QCalendarWidget()
         self.calendar.setSelectedDate(QDate.currentDate())
         self.calendar.selectionChanged.connect(self.on_date_changed)
 
+        # Create list to display entries on selected day
         self.entry_list = QListWidget()
         self.status_label = QLabel()
 
@@ -57,9 +64,17 @@ class BillingTrackerGUI(QMainWindow):
         ]:
             self.left_layout.addWidget(widget)
 
+        # Add widgets to right layout
+        for widget in [
+            self.stats_panel,
+            self.add_time_panel
+        ]:
+            self.right_layout.addWidget(widget)
+
         # Add left and right (stats) panels to main layout
         self.main_layout.addLayout(self.left_layout, stretch=3)
-        self.main_layout.addWidget(self.stats_panel, stretch=1)
+        self.main_layout.addLayout(self.right_layout, stretch=1)
+        #self.main_layout.addWidget(self.stats_panel, stretch=1)
         
         # Set central layout
         self.central.setLayout(self.main_layout)
