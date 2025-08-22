@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
 # time and description input boxes
 # description box should not clear on new entry 
 class AddTimePanel(QWidget):
-    def __init__(self):
+    def __init__(self, on_done_callback=None):
         super().__init__()
         self.setWindowTitle("Add Time Chunks")
         self.resize(300, 300)
@@ -48,8 +48,10 @@ class AddTimePanel(QWidget):
         # Connect buttons and input field
         self.add_button.clicked.connect(self.add_chunk)
         self.clear_button.clicked.connect(self.clear_chunks)
-        #self.done_button.clicked.connect(self.accept)
+        self.on_done_callback = on_done_callback
+        self.done_button.clicked.connect(self.done_clicked)
         self.minutes_input_field.returnPressed.connect(self.add_chunk)
+        
 
     def add_chunk(self):
         text = self.minutes_input_field.text().strip()
@@ -74,3 +76,8 @@ class AddTimePanel(QWidget):
 
     def get_minutes(self):
         return self.minutes
+    
+    def done_clicked(self):
+        if self.on_done_callback:
+            self.on_done_callback(self.get_minutes(), self.description_input_field.text())
+        self.clear_chunks() # Clear after adding

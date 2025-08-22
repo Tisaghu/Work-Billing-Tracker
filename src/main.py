@@ -27,7 +27,7 @@ class BillingTrackerGUI(QMainWindow):
 
         # Initialize widgets
         self.stats_panel = StatsPanel()
-        self.add_time_panel = AddTimePanel()
+        self.add_time_panel = AddTimePanel(on_done_callback=self.handle_add_time_panel_done)
 
         # Main data — initially empty; refresh_entries will reload from disk
         self.chunks = []
@@ -146,19 +146,17 @@ class BillingTrackerGUI(QMainWindow):
         if not ok:
             return
 
-        # Load existing chunks to find max ID
-        existing_chunks = load_chunks_from_csv()
-        if existing_chunks:
-            max_id = max(int(c.chunk_id) for c in existing_chunks)
-        else:
-            max_id = 0
-
+        # Find max ID of existing chunks to assign ID of new chunks
+        max_id = self.find_max_id()
 
         # Build *only* the new chunks
-        new_chunks = []
-        for m in minute_chunks:
-            max_id += 1
-            new_chunks.append(WorkChunk(str(max_id),self.current_date, m, desc.strip()))
+        # new_chunks = []
+        # for m in minute_chunks:
+        #     max_id += 1
+        #     new_chunks.append(WorkChunk(str(max_id),self.current_date, m, desc.strip()))
+        
+        # Build *only* the new chunks
+        new_chunks = self.build_new_chunk_list(max_id, self.current_date, minute_chunks, desc.strip())
 
         # Append these new chunks to the CSV
         save_chunks_to_csv(new_chunks, append=True)
@@ -188,6 +186,36 @@ class BillingTrackerGUI(QMainWindow):
                 self.refresh_entries()
                 return
                 
+    def handle_add_time_panel_done(self, minute_chunks, description):
+        if not minute_chunks:
+            return
+        
+        #get max id from existing chunks
+        max_id = self.find_max_id()
+        new_chunks = []
+        
+        # Build new chunks
+        new_chunks = self.build_new_chunk_list(max_id, self.current_date, minute_chunks, description.strip())
+
+        # Save new chunks to CSV
+        save_chunks_to_csv(new_chunks, append=True)
+        self.refresh_entries()
+
+    def find_max_id(self):
+        existing_chunks = load_chunks_from_csv()
+        if existing_chunks:
+            max_id = max(int(c.chunk_id) for c in existing_chunks)
+        else:
+            max_id = 0
+        return max_id
+    
+    def build_new_chunk_list(self, max_id, current_date, minute_chunks, description):
+        new_chunks = []
+        for m in minute_chunks:
+            max_id += 1
+            new_chunks.append(WorkChunk(str(max_id),current_date, m, description.strip()))
+        
+        return new_chunks
 
 def run_gui():
     app = QApplication(sys.argv)
