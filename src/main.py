@@ -12,7 +12,6 @@ from PyQt5.QtCore import QDate
 from models import WorkChunk
 from storage import load_chunks_from_csv, save_chunks_to_csv
 from stats_panel import StatsPanel
-from add_time_dialog import AddTimeDialog
 from add_time_panel import AddTimePanel
 
 # Constants
