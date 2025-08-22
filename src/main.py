@@ -37,6 +37,7 @@ class BillingTrackerGUI(QMainWindow):
         self.central = QWidget()
         self.main_layout = QHBoxLayout()
         self.left_layout = QVBoxLayout()
+        self.settings_layout = QHBoxLayout()
         self.right_layout = QVBoxLayout()
 
         # Create calendar widget
@@ -48,10 +49,10 @@ class BillingTrackerGUI(QMainWindow):
         self.entry_list = QListWidget()
         self.status_label = QLabel()
 
-        self.add_button = QPushButton("Add Time Entry")
+        self.edit_button = QPushButton("Edit Time Entry (WIP)")
         self.delete_button = QPushButton("Delete Selected Entry")
 
-        self.add_button.clicked.connect(self.add_time_entry)
+        self.edit_button.clicked.connect(self.edit_time_entry)
         self.delete_button.clicked.connect(self.delete_selected_entry)
 
         # Add widgets to left layout
@@ -59,7 +60,7 @@ class BillingTrackerGUI(QMainWindow):
             self.calendar,
             self.status_label,
             self.entry_list,
-            self.add_button,
+            self.edit_button,
             self.delete_button
         ]:
             self.left_layout.addWidget(widget)
@@ -133,36 +134,8 @@ class BillingTrackerGUI(QMainWindow):
             today_goal, week_goal, month_goal
         )
 
-    def add_time_entry(self):
-        dialog = AddTimeDialog()
-        if dialog.exec_() != QDialog.Accepted:
-            return
-
-        minute_chunks = dialog.get_minutes()
-        if not minute_chunks:
-            return
-
-        desc, ok = QInputDialog.getText(self, "Description", "Optional description:")
-        if not ok:
-            return
-
-        # Find max ID of existing chunks to assign ID of new chunks
-        max_id = self.find_max_id()
-
-        # Build *only* the new chunks
-        # new_chunks = []
-        # for m in minute_chunks:
-        #     max_id += 1
-        #     new_chunks.append(WorkChunk(str(max_id),self.current_date, m, desc.strip()))
-        
-        # Build *only* the new chunks
-        new_chunks = self.build_new_chunk_list(max_id, self.current_date, minute_chunks, desc.strip())
-
-        # Append these new chunks to the CSV
-        save_chunks_to_csv(new_chunks, append=True)
-
-        # Refresh UI from disk
-        self.refresh_entries()
+    def edit_time_entry(self):
+        pass
 
     def delete_selected_entry(self):
         selected_items = self.entry_list.selectedItems()
@@ -201,6 +174,7 @@ class BillingTrackerGUI(QMainWindow):
         save_chunks_to_csv(new_chunks, append=True)
         self.refresh_entries()
 
+
     def find_max_id(self):
         existing_chunks = load_chunks_from_csv()
         if existing_chunks:
@@ -208,6 +182,7 @@ class BillingTrackerGUI(QMainWindow):
         else:
             max_id = 0
         return max_id
+    
     
     def build_new_chunk_list(self, max_id, current_date, minute_chunks, description):
         new_chunks = []

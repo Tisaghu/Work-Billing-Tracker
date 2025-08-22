@@ -3,11 +3,11 @@ from PyQt5.QtWidgets import (
     QLabel, QPushButton, QListWidget, 
     QLineEdit, QWidget
 )
-# Panel to go under the stats panel to add work chunks from the
-# main window instead of through a dialogue - will have 
-# time and description input boxes
-# description box should not clear on new entry 
+
 class AddTimePanel(QWidget):
+    """
+    Panel in the main gui for adding chunks of worked time along with a description.
+    """
     def __init__(self, on_done_callback=None):
         super().__init__()
         self.setWindowTitle("Add Time Chunks")
