@@ -57,10 +57,6 @@ Work-Billing-Tracker/
 ├── README.md              # Project documentation
 ```
 
-## Customization & Extensibility
-- Change daily/weekly/monthly goals in `Main.py` or `calculations.py`.
-- Add new stats or widgets in `stats_panel.py`.
-- Integrate with other tools by exporting/importing CSV.
 
 ## Contributing
 Pull requests and suggestions are welcome! Please open an issue for feature requests or bug reports.
@@ -71,7 +67,3 @@ MIT License (see LICENSE file)
 ## Author
 Created by Tisaghu 
 
----
-
-
-*This project is designed to be portfolio-ready and demonstrates best practices in Python, OOP, modularization, and GUI development.*
