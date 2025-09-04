@@ -9,7 +9,7 @@ class SettingsDialog(QDialog):
         self.setWindowTitle("Settings")
         self.resize(300, 300)
 
-        #Widgets I need:
+        # Widgets I need:
         # Lunch duration : 
         # Daily Minutes Goal:
         

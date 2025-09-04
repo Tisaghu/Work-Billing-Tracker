@@ -4,8 +4,7 @@ from datetime import date
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget,
     QVBoxLayout, QHBoxLayout, QCalendarWidget,
-    QLabel, QPushButton, QListWidget, QInputDialog, QMessageBox,
-    QDialog
+    QLabel, QPushButton, QListWidget,  QMessageBox,
 )
 from PyQt5.QtCore import QDate
 
@@ -28,7 +27,7 @@ class BillingTrackerGUI(QMainWindow):
         self.stats_panel = StatsPanel()
         self.add_time_panel = AddTimePanel(on_done_callback=self.handle_add_time_panel_done)
 
-        # Main data — initially empty; refresh_entries will reload from disk
+        # Main data — initially empty; refresh_entries function will reload from disk
         self.chunks = []
         self.current_date = date.today()
 
@@ -39,7 +38,7 @@ class BillingTrackerGUI(QMainWindow):
         self.settings_layout = QHBoxLayout()
         self.right_layout = QVBoxLayout()
 
-        # Create calendar widget
+        # Create and connect calendar widget
         self.calendar = QCalendarWidget()
         self.calendar.setSelectedDate(QDate.currentDate())
         self.calendar.selectionChanged.connect(self.on_date_changed)
@@ -48,9 +47,9 @@ class BillingTrackerGUI(QMainWindow):
         self.entry_list = QListWidget()
         self.status_label = QLabel()
 
+        # Create and connect buttons for editing and deleting entries
         self.edit_button = QPushButton("Edit Time Entry (WIP)")
         self.delete_button = QPushButton("Delete Selected Entry")
-
         self.edit_button.clicked.connect(self.edit_time_entry)
         self.delete_button.clicked.connect(self.delete_selected_entry)
 
@@ -74,16 +73,16 @@ class BillingTrackerGUI(QMainWindow):
         # Add left and right (stats) panels to main layout
         self.main_layout.addLayout(self.left_layout, stretch=3)
         self.main_layout.addLayout(self.right_layout, stretch=1)
-        #self.main_layout.addWidget(self.stats_panel, stretch=1)
         
         # Set central layout
         self.central.setLayout(self.main_layout)
         self.setCentralWidget(self.central)
 
-        # initial load
+        # initial load of CSV file (if exists)
         self.refresh_entries()
 
     def on_date_changed(self):
+        """Update the calendar, current_date variable, and entries for the newly selected date."""
         qdate = self.calendar.selectedDate()
         self.current_date = qdate.toPyDate()
         self.refresh_entries()
@@ -167,7 +166,7 @@ class BillingTrackerGUI(QMainWindow):
         new_chunks = []
         
         # Build new chunks
-        new_chunks = self.build_new_chunk_list(max_id, self.current_date, minute_chunks, description.strip())
+        new_chunks = self.build_new_chunk_list(max_id, self.current_date, minute_chunks, description)
 
         # Save new chunks to CSV
         save_chunks_to_csv(new_chunks, append=True)
