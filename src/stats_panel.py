@@ -2,6 +2,8 @@ from PyQt5.QtWidgets import (
      QWidget, QVBoxLayout, QLabel, QFrame,
 )
 
+from PyQt5.QtGui import QFont
+
 from PyQt5.QtCore import Qt
 
 class StatsPanel(QWidget):
@@ -12,20 +14,35 @@ class StatsPanel(QWidget):
         self.setLayout(self.layout)
 
         # Create labels for each stat and store them for easy updates
+        self.billed_today_title = QLabel("TODAY")
         self.billed_today_minutes_label = QLabel("Billed today: 0/0 min")
         self.billed_today_hours_label = QLabel("Billed today: 0/0 hours")
         self.today_percent_label = QLabel("Daily goal completion: 0%")
 
+        self.billed_week_title = QLabel("WEEK")
         self.billed_week_minutes_label = QLabel("Billed this week: 0/0 min")
         self.billed_week_hours_label = QLabel("Billed this week: 0/0 hours")
         self.week_percent_label = QLabel("Weekly goal completion: 0%")
 
+        self.billed_month_title = QLabel("MONTH")
         self.billed_month_minutes_label = QLabel("Billed this month: 0/0 min")
         self.billed_month_hours_label = QLabel("Billed this month: 0/0 hours")
         self.month_percent_label = QLabel("Monthly goal completion: 0%")
 
         self.goal_percent_label = QLabel("Weekly goal completion: 0%")
         self.minutes_remaining_label = QLabel("Minutes remaining: 0")
+
+        # Fonts for title labels
+        font = QFont()
+        font.setBold(True)
+        font.setPointSize(10)
+
+        for lbl in [
+            self.billed_today_title,
+            self.billed_week_title,
+            self.billed_month_title
+        ]:
+            lbl.setFont(font)
 
         # Create separators
         today_separator = QFrame()
@@ -42,16 +59,19 @@ class StatsPanel(QWidget):
 
         # Make them look neat
         for lbl in [
+            self.billed_today_title,
             self.billed_today_minutes_label,
             self.billed_today_hours_label,
             self.today_percent_label,
             today_separator,
 
+            self.billed_week_title,
             self.billed_week_minutes_label,
             self.billed_week_hours_label,
             self.week_percent_label,
             week_separator,
 
+            self.billed_month_title,
             self.billed_month_minutes_label,
             self.billed_month_hours_label,
             self.month_percent_label,
