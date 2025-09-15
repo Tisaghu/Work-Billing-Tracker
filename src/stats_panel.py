@@ -32,17 +32,29 @@ class StatsPanel(QWidget):
         self.goal_percent_label = QLabel("Weekly goal completion: 0%")
         self.minutes_remaining_label = QLabel("Minutes remaining: 0")
 
-        # Fonts for title labels
-        font = QFont()
-        font.setBold(True)
-        font.setPointSize(10)
+        # Font for title labels
+        titleFont = QFont()
+        titleFont.setBold(True)
+        titleFont.setPointSize(10)
 
         for lbl in [
             self.billed_today_title,
             self.billed_week_title,
             self.billed_month_title
         ]:
-            lbl.setFont(font)
+            lbl.setFont(titleFont)
+
+        # Font for completion % labels
+        completionFont = QFont()
+        completionFont.setBold(True)
+        completionFont.setPointSize(8)
+
+        for lbl in [
+            self.today_percent_label,
+            self.week_percent_label,
+            self.month_percent_label
+        ]:
+            lbl.setFont(completionFont)
 
         # Create separators
         today_separator = QFrame()
