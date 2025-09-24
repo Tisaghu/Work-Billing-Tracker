@@ -26,3 +26,12 @@ class WorkChunk:
         minutes = int(row[2])
         description = row[3] if len(row) > 2 else ""
         return WorkChunk(chunk_id, chunk_date, minutes, description)
+
+
+class Day:
+    """
+    Represents a single calendar day.
+    """
+    def __init__(self, date: date, chunks: list):
+        self.date = date
+        self.chunks = []
