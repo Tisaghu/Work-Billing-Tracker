@@ -32,6 +32,7 @@ A professional, extensible tool for tracking your work billing hours, designed f
 
 
 ### Packaging as an EXE (Windows)
+Navigate to the main project directory in terminal then:
 1. Install PyInstaller:
    ```sh
    pip install pyinstaller
@@ -48,7 +49,7 @@ A professional, extensible tool for tracking your work billing hours, designed f
 ```
 Work-Billing-Tracker/
 ├── Main.py                # Main GUI entry point
-├── models.py              # WorkChunk data model
+├── models.py              # WorkChunk and Day data models
 ├── storage.py             # CSV read/write logic
 ├── calculations.py        # Business logic (totals, date ranges)
 ├── stats_panel.py         # StatsPanel widget for GUI

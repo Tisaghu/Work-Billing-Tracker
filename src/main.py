@@ -143,7 +143,6 @@ class BillingTrackerGUI(QMainWindow):
         pass
 
     def delete_selected_entry(self):
-        # TODO: Update this logic to use day objects
         selected_items = self.entry_list.selectedItems()
         if not selected_items:
             QMessageBox.information(self, "No selection", "Select an entry to delete.")
@@ -181,10 +180,7 @@ class BillingTrackerGUI(QMainWindow):
 
         # Save new chunks to CSV
         save_chunks_to_csv(new_chunks, append=True)
-
-        # TODO: Update or create day object in the days dictionary
         self.add_chunks_to_day(self.selected_date, new_chunks)
-
         self.refresh_entries()
 
     def add_chunks_to_day(self, date, chunks):
