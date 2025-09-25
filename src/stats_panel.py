@@ -6,6 +6,8 @@ from PyQt5.QtGui import QFont
 
 from PyQt5.QtCore import Qt
 
+import calculations
+
 class StatsPanel(QWidget):
     def __init__(self):
         super().__init__()
@@ -127,3 +129,21 @@ class StatsPanel(QWidget):
             remaining = 0
         self.goal_percent_label.setText(f"Weekly goal completion: {percent:.1f}%")
         self.minutes_remaining_label.setText(f"Minutes Remaining For This Week: {max(0, remaining)}")
+
+
+    def calculate_billed_time(selected_date, period, chunk_list):
+        if period == "week":
+            #Find the first and last day of the week
+            start, end = calculations.get_week_range(selected_date)
+
+        elif period == "month":
+            #Find the first and last day of the month
+            start, end = calculations.get_month_range(selected_date)
+
+        billed_minutes = calculations.get_total_minutes_for_range(chunk_list, start, end)
+        return billed_minutes
+        
+
+        
+
+        

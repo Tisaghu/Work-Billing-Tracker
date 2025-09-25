@@ -45,4 +45,5 @@ def get_total_minutes_for_day(chunks: List[WorkChunk], target_date: date) -> int
     """
     Sum all minutes for a specific date.
     """
+    #TODO: Can probably refactor this using the day_dict instead of the chunk list
     return sum(chunk.minutes for chunk in chunks if chunk.chunk_date == target_date)

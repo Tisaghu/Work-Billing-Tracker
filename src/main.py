@@ -1,4 +1,6 @@
 import sys
+import calculations
+
 from datetime import date
 
 from PyQt5.QtWidgets import (
@@ -12,6 +14,7 @@ from models import WorkChunk, Day
 from storage import load_chunks_from_csv, save_chunks_to_csv
 from stats_panel import StatsPanel
 from add_time_panel import AddTimePanel
+
 
 # Constants
 DAILY_GOAL = 480  # minutes per workday - (Assumes a standard 8 hours - need to account for lunches in the future)
@@ -110,9 +113,9 @@ class BillingTrackerGUI(QMainWindow):
         billed_week = 0
         billed_month = 0
 
-        today = date.today()
-        week_start, week_end = get_week_range(today)
-        month_start, month_end = get_month_range(today)
+        #today = date.today()
+        week_start, week_end = get_week_range(self.selected_date)
+        month_start, month_end = get_month_range(self.selected_date)
 
         # Show entries for the currently selected date
         if self.selected_date in self.days_dict:
@@ -121,10 +124,10 @@ class BillingTrackerGUI(QMainWindow):
                 self.entry_list.addItem(f"ID:{chunk.chunk_id}, {chunk.minutes} min - {chunk.description}")
                 count_for_selected_date += 1
 
-                #accumulate stats (always compare to today's date for "today/week/month")
-                billed_today += chunk.minutes
-                billed_week += chunk.minutes
-                billed_month += chunk.minutes
+        #TODO: Organize these better 
+        billed_today = calculations.get_total_minutes_for_day(self.chunks, self.selected_date)
+        billed_week = StatsPanel.calculate_billed_time(self.selected_date, "week", self.chunks)
+        billed_month = StatsPanel.calculate_billed_time(self.selected_date, "month", self.chunks)
 
         self.status_label.setText(f"Entries for {self.selected_date} ({count_for_selected_date}):")
 
