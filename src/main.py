@@ -30,7 +30,7 @@ class BillingTrackerGUI(QMainWindow):
         self.stats_panel = StatsPanel()
         self.add_time_panel = AddTimePanel(on_done_callback=self.handle_add_time_panel_done)
 
-        # Main data — initially empty; refresh_entries function will reload from disk
+        # Main data — initially empty; initialize_lists function will reload from disk
         self.chunks = []
         self.days_dict = {}
         self.selected_date = date.today() #Set the selected date to today by default
@@ -123,11 +123,15 @@ class BillingTrackerGUI(QMainWindow):
             for chunk in day_obj.chunks:
                 self.entry_list.addItem(f"ID:{chunk.chunk_id}, {chunk.minutes} min - {chunk.description}")
                 count_for_selected_date += 1
+                billed_today += chunk.minutes
+        else:
+            # No day object for this day yet
+            # TODO: need to alter how much I rely on the days_dict vs the chunks list for truth
+            pass
 
         #TODO: Organize these better 
-        billed_today = calculations.get_total_minutes_for_day(self.chunks, self.selected_date)
-        billed_week = StatsPanel.calculate_billed_time(self.selected_date, "week", self.chunks)
-        billed_month = StatsPanel.calculate_billed_time(self.selected_date, "month", self.chunks)
+        billed_week = calculations.calculate_billed_time(self.selected_date, "week", self.chunks)
+        billed_month = calculations.calculate_billed_time(self.selected_date, "month", self.chunks)
 
         self.status_label.setText(f"Entries for {self.selected_date} ({count_for_selected_date}):")
 

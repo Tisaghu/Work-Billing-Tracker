@@ -47,3 +47,17 @@ def get_total_minutes_for_day(chunks: List[WorkChunk], target_date: date) -> int
     """
     #TODO: Can probably refactor this using the day_dict instead of the chunk list
     return sum(chunk.minutes for chunk in chunks if chunk.chunk_date == target_date)
+
+
+def calculate_billed_time(selected_date, period, chunk_list):
+    if period == "week":
+        #Find the first and last day of the week
+        start, end = get_week_range(selected_date)
+
+    elif period == "month":
+        #Find the first and last day of the month
+        start, end = get_month_range(selected_date)
+
+    billed_minutes = get_total_minutes_for_range(chunk_list, start, end)
+    return billed_minutes
+        
