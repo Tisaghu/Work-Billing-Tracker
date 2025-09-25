@@ -21,13 +21,14 @@ A professional, extensible tool for tracking your work billing hours, designed f
 
 
 ### Running the App
+Navigate to the main project directory in terminal then:
 1. Install dependencies:
    ```sh
    pip install pyqt5
    ```
 2. Run the app:
    ```sh
-   python Main.py
+   python main.py
    ```
 
 
