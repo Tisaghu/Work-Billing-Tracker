@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QCalendarWidget,
     QLabel, QPushButton, QListWidget,  QMessageBox,
 )
-from PyQt5.QtCore import QDate
+from PyQt5.QtCore import QDate, Qt
 
 from models import WorkChunk, Day
 from storage import load_chunks_from_csv, save_chunks_to_csv
@@ -194,10 +194,11 @@ class BillingTrackerGUI(QMainWindow):
         if date not in self.days_dict:
             day_obj = Day(date, chunks)
             self.days_dict[date] = day_obj
-        else:
-            day_obj = self.days_dict[date]
-            for chunk in chunks:
-                day_obj.chunks.append(chunk)
+        
+        day_obj = self.days_dict[date]
+
+        for chunk in chunks:
+            day_obj.chunks.append(chunk)
 
 
 
