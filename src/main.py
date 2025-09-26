@@ -21,6 +21,7 @@ DAILY_GOAL = 480  # minutes per workday - (Assumes a standard 8 hours - need to 
 
 
 class BillingTrackerGUI(QMainWindow):
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Work Billing Tracker")
@@ -187,7 +188,9 @@ class BillingTrackerGUI(QMainWindow):
 
         # Save new chunks to CSV
         save_chunks_to_csv(new_chunks, append=True)
-        self.add_chunks_to_day(self.selected_date, new_chunks)
+
+        # Reinitialize lists and refresh entries to reflect changes
+        self.initialize_lists()
         self.refresh_entries()
 
     def add_chunks_to_day(self, date, chunks):
