@@ -30,7 +30,7 @@ class WorkChunk:
 
 class Day:
     """
-    Represents a single calendar day. Stores a list of the time chunks recorded
+    Represents a single calendar day. Stores a list of the work chunks recorded
     for that day for easier retrieval.
     """
     def __init__(self, date: date, chunks: list):
