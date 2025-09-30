@@ -11,8 +11,8 @@ from PyQt5.QtCore import QDate, Qt
 
 from models import WorkChunk, Day
 from storage import load_chunks_from_csv, save_chunks_to_csv
-from GUI.stats_panel import StatsPanel
-from GUI.add_time_panel import AddTimePanel
+from GUI.Panels.stats_panel import StatsPanel
+from GUI.Panels.add_time_panel import AddTimePanel
 
 
 # Constants
