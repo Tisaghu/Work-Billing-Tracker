@@ -5,7 +5,7 @@ import csv
 import os
 import sys
 from typing import List
-from models import WorkChunk
+from .models import WorkChunk
 
 if getattr(sys, 'frozen', False):
     # If running as a PyInstaller bundle, get the parent of the .exe (dist/)
