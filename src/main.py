@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication
-from GUI.BillingTrackerGUI import BillingTrackerGUI
+from src.GUI.BillingTrackerGUI import BillingTrackerGUI
 import sys
 
 def run_gui():

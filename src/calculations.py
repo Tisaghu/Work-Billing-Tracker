@@ -4,7 +4,7 @@
 import calendar
 from datetime import date, timedelta
 from typing import List
-from .models import WorkChunk
+from src.models import WorkChunk
 
 def get_week_range(target_date: date):
     """

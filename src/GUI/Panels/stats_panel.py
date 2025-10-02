@@ -6,7 +6,7 @@ from PyQt5.QtGui import QFont
 
 from PyQt5.QtCore import Qt
 
-import calculations
+import src.calculations
 
 class StatsPanel(QWidget):
     def __init__(self):

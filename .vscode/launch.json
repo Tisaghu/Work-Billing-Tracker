@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Work Billing Tracker",
+            "type": "python",
+            "request": "launch",
+            "module": "src.main",     // 👈 this is key
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}

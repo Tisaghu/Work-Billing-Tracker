@@ -1,4 +1,4 @@
-import calculations
+import src.calculations
 
 from datetime import date
 
@@ -9,10 +9,12 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import QDate, Qt
 
-from models import WorkChunk, Day
-from storage import load_chunks_from_csv, save_chunks_to_csv
-from GUI.Panels.stats_panel import StatsPanel
-from GUI.Panels.add_time_panel import AddTimePanel
+from src.models import WorkChunk, Day
+from src.storage import load_chunks_from_csv, save_chunks_to_csv
+from src.calculations import *
+from src.data_manager import DataManager
+from src.GUI.Panels.stats_panel import StatsPanel
+from src.GUI.Panels.add_time_panel import AddTimePanel
 
 
 # Constants
@@ -31,8 +33,7 @@ class BillingTrackerGUI(QMainWindow):
         self.add_time_panel = AddTimePanel(on_done_callback=self.handle_add_time_panel_done)
 
         # Main data — initially empty; initialize_lists function will reload from disk
-        self.chunks = []
-        self.days_dict = {}
+        self.data_manager = DataManager()
         self.selected_date = date.today() #Set the selected date to today by default
 
         # --- Widgets ---
@@ -83,18 +84,8 @@ class BillingTrackerGUI(QMainWindow):
         self.central.setLayout(self.main_layout)
         self.setCentralWidget(self.central)
 
-        # initialize the chunks list and days_dict from CSV file
-        self.initialize_lists()
-
         # initial load of main GUI elements
         self.refresh_entries()
-
-
-    def initialize_lists(self):
-        """Load the time chunks from the CSV file into the chunks list, and build the day dictionary 
-            using the chunks list. """
-        self.chunks = load_chunks_from_csv()
-        self.days_dict = self.create_day_dict(self.chunks)
 
     def on_date_changed(self):
         """Update the calendar, selected_date variable, and entries for the newly selected date."""
@@ -104,7 +95,8 @@ class BillingTrackerGUI(QMainWindow):
 
     def refresh_entries(self):
         """Reload chunks from disk (CSV) and update the entries list + stats."""
-        from calculations import get_week_range, get_month_range, get_weekdays_in_range
+        #from src.calculations import get_week_range, get_month_range, get_weekdays_in_range, calculate_billed_time
+        
 
         # clear UI list and compute stats
         self.entry_list.clear()
@@ -118,8 +110,8 @@ class BillingTrackerGUI(QMainWindow):
         month_start, month_end = get_month_range(self.selected_date)
 
         # Show entries for the currently selected date
-        if self.selected_date in self.days_dict:
-            day_obj = self.days_dict[self.selected_date]
+        if self.selected_date in self.data_manager.days_dict:
+            day_obj = self.data_manager.days_dict[self.selected_date]
             for chunk in day_obj.chunks:
                 self.entry_list.addItem(f"ID:{chunk.chunk_id}, {chunk.minutes} min - {chunk.description}")
                 count_for_selected_date += 1
@@ -130,8 +122,8 @@ class BillingTrackerGUI(QMainWindow):
             pass
 
         #TODO: Organize these better 
-        billed_week = calculations.calculate_billed_time(self.selected_date, "week", self.chunks)
-        billed_month = calculations.calculate_billed_time(self.selected_date, "month", self.chunks)
+        billed_week = calculate_billed_time(self.selected_date, "week", self.data_manager.chunks)
+        billed_month = calculate_billed_time(self.selected_date, "month", self.data_manager.chunks)
 
         self.status_label.setText(f"Entries for {self.selected_date} ({count_for_selected_date}):")
 
@@ -158,28 +150,15 @@ class BillingTrackerGUI(QMainWindow):
         selected_text = selected_items[0].text()
         id_to_delete = int(selected_text.split(',')[0].split(':')[1])
 
-        # Reload authoritative chunks from disk
-        self.chunks = load_chunks_from_csv()
-
-        # Find matching chunk (first match)
-        for i, chunk in enumerate(self.chunks):
-            if chunk.chunk_id == str(id_to_delete):
-                del self.chunks[i]
-
-                #Overwrite file with updated chunk list (no duplicates)
-                save_chunks_to_csv(self.chunks, append=False)
-
-                #Refresh chunk and day lists and refresh GUI
-                self.initialize_lists()
-                self.refresh_entries()
-                return
+        self.data_manager.delete_chunk(id_to_delete)
+        self.refresh_entries()
                 
     def handle_add_time_panel_done(self, minute_chunks, description):
         if not minute_chunks:
             return
         
         #get max id from existing chunks
-        max_id = self.find_max_id()
+        max_id = self.data_manager.get_max_id()
         new_chunks = []
         
         # Build new chunks
@@ -189,29 +168,8 @@ class BillingTrackerGUI(QMainWindow):
         save_chunks_to_csv(new_chunks, append=True)
 
         # Reinitialize lists and refresh entries to reflect changes
-        self.initialize_lists()
-        self.refresh_entries()
-
-    def add_chunks_to_day(self, date, chunks):
-        if date not in self.days_dict:
-            day_obj = Day(date, chunks)
-            self.days_dict[date] = day_obj
-        
-        day_obj = self.days_dict[date]
-
-        for chunk in chunks:
-            day_obj.chunks.append(chunk)
-
-
-
-    def find_max_id(self):
-        existing_chunks = load_chunks_from_csv()
-        if existing_chunks:
-            max_id = max(int(c.chunk_id) for c in existing_chunks)
-        else:
-            max_id = 0
-        return max_id
-    
+        self.data_manager.load_data()
+        self.refresh_entries()    
     
     def build_new_chunk_list(self, max_id, selected_date, minute_chunks, description):
         new_chunks = []
@@ -221,16 +179,3 @@ class BillingTrackerGUI(QMainWindow):
         
         return new_chunks
     
-    def create_day_dict(self, chunks):
-        days_dict = {}
-
-        for chunk in chunks:
-            if chunk.chunk_date not in days_dict:
-                day_obj = Day(chunk.chunk_date, [])
-                day_obj.chunks.append(chunk)
-                days_dict[chunk.chunk_date] = day_obj
-            else:
-                day_obj = days_dict[chunk.chunk_date]
-                day_obj.chunks.append(chunk)
-
-        return days_dict
