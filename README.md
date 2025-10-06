@@ -46,17 +46,28 @@ Navigate to the main project directory in terminal then:
 
 
 ## File Structure
-
 ```
 Work-Billing-Tracker/
-├── Main.py                # Main GUI entry point
-├── models.py              # WorkChunk and Day data models
-├── storage.py             # CSV read/write logic
-├── calculations.py        # Business logic (totals, date ranges)
-├── stats_panel.py         # StatsPanel widget for GUI
-├── add_time_dialog.py     # AddTimeDialog widget for GUI
-├── work_chunks.csv        # Your time log data
-├── README.md              # Project documentation
+├── README.md
+├── Test
+│   ├── test_calculations.py
+│   ├── test_models.py
+│   └── test_storage.py
+├── requirements.txt
+├── src
+│   ├── GUI
+│   │   ├── BillingTrackerGUI.py
+│   │   ├── Dialogs
+│   │   │   └── settings_dialog.py
+│   │   └── Panels
+│   │       ├── add_time_panel.py
+│   │       └── stats_panel.py
+│   ├── calculations.py             # Business logic (totals, date ranges)
+│   ├── data_manager.py             # Data Manager Class
+│   ├── main.py                     # Main entry point
+│   ├── models.py                   # WorkChunk and Day data models
+│   └── storage.py                  # CSV read/write logic
+└── work_chunks.csv                 # Your time log data (if exists)
 ```
 
 
