@@ -24,7 +24,7 @@ DAILY_GOAL = 480  # minutes per workday - (Assumes a standard 8 hours - need to 
 
 
 class BillingTrackerGUI(QMainWindow):
-
+#---------- INITIALIZATION ----------
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Work Billing Tracker")
@@ -94,6 +94,9 @@ class BillingTrackerGUI(QMainWindow):
         # initial load of main GUI elements
         self.refresh_entries()
 
+
+# ------------ EVENT HANDLERS ------------
+
     def on_date_changed(self):
         """Update the calendar, selected_date variable, and entries for the newly selected date."""
         qdate = self.calendar.selectedDate()
@@ -104,6 +107,26 @@ class BillingTrackerGUI(QMainWindow):
             self.selected_date = qdate.toPyDate()
             self.last_valid_date = qdate
             self.refresh_entries()
+
+    def edit_time_entry(self):
+        pass
+
+
+    def delete_selected_entry(self):
+        selected_items = self.entry_list.selectedItems()
+        if not selected_items:
+            QMessageBox.information(self, "No selection", "Select an entry to delete.")
+            return
+
+        selected_text = selected_items[0].text()
+        id_to_delete = int(selected_text.split(',')[0].split(':')[1])
+
+        self.data_manager.delete_chunk(id_to_delete)
+        self.refresh_entries()
+
+
+#---------- CORE LOGIC ----------
+
 
     def refresh_entries(self):
         """Reload chunks from disk (CSV) and update the entries list + stats."""
@@ -150,21 +173,7 @@ class BillingTrackerGUI(QMainWindow):
             today_goal, week_goal, month_goal
         )
 
-    def edit_time_entry(self):
-        pass
-
-    def delete_selected_entry(self):
-        selected_items = self.entry_list.selectedItems()
-        if not selected_items:
-            QMessageBox.information(self, "No selection", "Select an entry to delete.")
-            return
-
-        selected_text = selected_items[0].text()
-        id_to_delete = int(selected_text.split(',')[0].split(':')[1])
-
-        self.data_manager.delete_chunk(id_to_delete)
-        self.refresh_entries()
-                
+          
     def handle_add_time_panel_done(self, minute_chunks, description):
         if not minute_chunks:
             return
@@ -182,6 +191,7 @@ class BillingTrackerGUI(QMainWindow):
         # Reinitialize lists and refresh entries to reflect changes
         self.data_manager.load_data()
         self.refresh_entries()    
+        
     
     def build_new_chunk_list(self, max_id, selected_date, minute_chunks, description):
         new_chunks = []
