@@ -9,6 +9,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import QDate, Qt
 
+from PyQt5.QtGui import QTextCharFormat, QColor
+
 from src.models import WorkChunk, Day
 from src.storage import load_chunks_from_csv, save_chunks_to_csv
 from src.calculations import *
@@ -46,7 +48,12 @@ class BillingTrackerGUI(QMainWindow):
         # Create and connect calendar widget
         self.calendar = QCalendarWidget()
         self.calendar.setVerticalHeaderFormat(QCalendarWidget.NoVerticalHeader)
+        greyFormat = QTextCharFormat()
+        greyFormat.setForeground(QColor("gray"))
+        self.calendar.setWeekdayTextFormat(Qt.Saturday, greyFormat)
+        self.calendar.setWeekdayTextFormat(Qt.Sunday, greyFormat)
         self.calendar.setSelectedDate(QDate.currentDate())
+        self.last_valid_date = self.calendar.selectedDate()
         self.calendar.selectionChanged.connect(self.on_date_changed)
 
         # Create list to display entries on selected day
@@ -90,8 +97,13 @@ class BillingTrackerGUI(QMainWindow):
     def on_date_changed(self):
         """Update the calendar, selected_date variable, and entries for the newly selected date."""
         qdate = self.calendar.selectedDate()
-        self.selected_date = qdate.toPyDate()
-        self.refresh_entries()
+        if qdate.dayOfWeek() in (6, 7): # Saturday=6, Sunday=7
+            # Revert to the last valid date
+            self.calendar.setSelectedDate(self.last_valid_date)
+        else:
+            self.selected_date = qdate.toPyDate()
+            self.last_valid_date = qdate
+            self.refresh_entries()
 
     def refresh_entries(self):
         """Reload chunks from disk (CSV) and update the entries list + stats."""
