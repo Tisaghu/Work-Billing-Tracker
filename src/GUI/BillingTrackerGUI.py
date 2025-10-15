@@ -17,6 +17,7 @@ from src.calculations import *
 from src.data_manager import DataManager
 from src.GUI.Panels.stats_panel import StatsPanel
 from src.GUI.Panels.add_time_panel import AddTimePanel
+from src.GUI.custom_calendar import CustomCalendarWidget
 
 
 # Constants
@@ -45,13 +46,8 @@ class BillingTrackerGUI(QMainWindow):
         self.settings_layout = QHBoxLayout()
         self.right_layout = QVBoxLayout()
 
-        # Create and connect calendar widget
-        self.calendar = QCalendarWidget()
-        self.calendar.setVerticalHeaderFormat(QCalendarWidget.NoVerticalHeader)
-        greyFormat = QTextCharFormat()
-        greyFormat.setForeground(QColor("gray"))
-        self.calendar.setWeekdayTextFormat(Qt.Saturday, greyFormat)
-        self.calendar.setWeekdayTextFormat(Qt.Sunday, greyFormat)
+        # Calendar Widget Setup
+        self.calendar = CustomCalendarWidget()
         self.calendar.setSelectedDate(QDate.currentDate())
         self.last_valid_date = self.calendar.selectedDate()
         self.calendar.selectionChanged.connect(self.on_date_changed)
