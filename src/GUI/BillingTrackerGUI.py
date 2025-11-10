@@ -170,8 +170,8 @@ class BillingTrackerGUI(QMainWindow):
         )
 
           
-    def handle_add_time_panel_done(self, minute_chunks, description):
-        if not minute_chunks:
+    def handle_add_time_panel_done(self, minutes, description):
+        if not minutes:
             return
         
         #get max id from existing chunks
@@ -179,7 +179,8 @@ class BillingTrackerGUI(QMainWindow):
         new_chunks = []
         
         # Build new chunks
-        new_chunks = self.build_new_chunk_list(max_id, self.selected_date, minute_chunks, description)
+        new_chunk = self.build_new_chunk(max_id, self.selected_date, minutes, description)
+        new_chunks = [new_chunk]
 
         # Save new chunks to CSV
         save_chunks_to_csv(new_chunks, append=True)
@@ -188,6 +189,9 @@ class BillingTrackerGUI(QMainWindow):
         self.data_manager.load_data()
         self.refresh_entries()    
         
+    def build_new_chunk(self, max_id, selected_date, minutes, description):
+        new_chunk = WorkChunk(str(max_id), selected_date, minutes, description.strip())
+        return new_chunk
     
     def build_new_chunk_list(self, max_id, selected_date, minute_chunks, description):
         new_chunks = []
