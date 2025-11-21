@@ -6,12 +6,10 @@ A professional, extensible tool for tracking your work billing hours, designed f
 ## Features
 
 - **Modern GUI:** Use a clean, intuitive PyQt5 desktop app with calendar-based date selection.
-- **Flexible Time Entry:** Add multiple time chunks per day using a dialog interface.
 - **Calendar View:** Select dates easily in the GUI with a calendar widget.
 - **Stats Panel:** See billed minutes/hours and goal progress for today, week, and month.
 - **CSV Storage:** All data is saved in a portable CSV file for easy backup and analysis.
 - **Modular Codebase:** Clean separation of models, storage, calculations, and UI components.
-- **Extensible:** Easy to add new features, such as PTO/holiday tracking, custom goals, or export formats.
 
 ## Getting Started
 
@@ -56,10 +54,11 @@ Work-Billing-Tracker/
 ├── requirements.txt
 ├── src
 │   ├── GUI
-│   │   ├── BillingTrackerGUI.py
-│   │   ├── Dialogs
+│   │   ├── BillingTrackerGUI.py    # Main window GUI
+│   │   ├── custom_calendar.py      # Calendar Widget
+│   │   ├── Dialogs                 # GUI for dialogs within main window
 │   │   │   └── settings_dialog.py
-│   │   └── Panels
+│   │   └── Panels                  # GUI for panels within main window
 │   │       ├── add_time_panel.py
 │   │       └── stats_panel.py
 │   ├── calculations.py             # Business logic (totals, date ranges)
