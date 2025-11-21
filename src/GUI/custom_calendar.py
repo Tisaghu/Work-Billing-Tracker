@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QCalendarWidget
 from PyQt5.QtGui import QTextCharFormat, QColor
-from PyQt5.QtCore import QDate, Qt
+from PyQt5.QtCore import QDate, QTimer
 
 class CustomCalendarWidget(QCalendarWidget):
     def __init__(self, parent=None):
@@ -8,9 +8,13 @@ class CustomCalendarWidget(QCalendarWidget):
         self.apply_weekend_format(self.yearShown(), self.monthShown())
         self.setVerticalHeaderFormat(QCalendarWidget.NoVerticalHeader)
         self.currentPageChanged.connect(self.on_month_changed)
+        self.highlight_today()
+        self._last_highlighted_date = QDate.currentDate()
+        self.start_refresh_timer()
 
     def on_month_changed(self, year, month):
         self.apply_weekend_format(year, month)
+        self.highlight_today()
 
     def apply_weekend_format(self, year, month):
         # Helper functions
@@ -45,3 +49,24 @@ class CustomCalendarWidget(QCalendarWidget):
                 qdate = QDate(y, m, day)
                 if qdate.dayOfWeek() in (6, 7):
                     self.setDateTextFormat(qdate, dark_gray_format)
+
+    def highlight_today(self):
+        today_highlight_format = QTextCharFormat()
+        today_highlight_format.setBackground(QColor("#F4F8A4"))
+        today_highlight_format.setForeground(QColor("Black"))
+        today = QDate.currentDate()
+        self.setDateTextFormat(today, today_highlight_format)
+
+    def _check_today_changed(self):
+        """Called by the timer - if the system date rolled over, reapply formats."""
+        now = QDate.currentDate()
+        if now != getattr(self, "_last_highlighted_date", None):
+            self.highlight_today()
+
+
+    def start_refresh_timer(self):
+        self._today_refresh_timer = QTimer(self)
+        self._today_refresh_timer.setInterval(30* 60 * 1000) #Check every 30 minutes
+        self._today_refresh_timer.timeout.connect(self._check_today_changed)
+        self._today_refresh_timer.start()
+        
