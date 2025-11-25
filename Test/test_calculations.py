@@ -1,7 +1,21 @@
 import pytest
 
+from PyQt5.QtWidgets import QApplication
 from src.calculations import *
 from datetime import date
+
+@pytest.fixture(scope="session")
+def qapp():
+    """Create QApplication once for all tests."""
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])
+    return app
+
+@pytest.fixture(autouse=True)
+def use_qapp(qapp):
+    """Automatically use qapp for every test."""
+    pass
 
 @pytest.mark.parametrize("input_date,expected_start,expected_end", [
     (date(2025, 9, 30), date(2025, 9, 29), date(2025, 10, 5)),  # Tuesday

@@ -56,11 +56,18 @@ class CustomCalendarWidget(QCalendarWidget):
         today_highlight_format.setForeground(QColor("Black"))
         today = QDate.currentDate()
         self.setDateTextFormat(today, today_highlight_format)
+        self._last_highlighted_date = today
+    
+    def clear_old_highlight(self):
+        clear_format = QTextCharFormat()
+        self.setDateTextFormat(self._last_highlighted_date, clear_format)
 
     def _check_today_changed(self):
         """Called by the timer - if the system date rolled over, reapply formats."""
         now = QDate.currentDate()
-        if now != getattr(self, "_last_highlighted_date", None):
+        #if now != getattr(self, "_last_highlighted_date", None):
+        if now != self._last_highlighted_date:
+            self.clear_old_highlight()
             self.highlight_today()
 
 
