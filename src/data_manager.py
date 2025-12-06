@@ -5,6 +5,15 @@ from src.storage import load_chunks_from_csv, save_chunks_to_csv
 
 
 class DataManager:
+    """
+    Represents a Data Management object for the Billing Tracker. Responsible for
+    managing time chunks.
+
+    Attributes:
+        chunks(list): A list of all recorded time chunk objects. (See models.py)
+        days_dict: A dictionary that sorts all recorded time chunk objects from
+                   the chunks list by date.
+    """
     def __init__(self):
         self.chunks = []
         self.days_dict = {}
@@ -45,7 +54,11 @@ class DataManager:
         return 0
 
     def _create_day_dict(self, chunks):
-        """Build a dictionary of Day objects keyed by date."""
+        """
+        Build a dictionary of Day objects keyed by date.
+        
+        :param chunks: List of chunk objects to build dictionary.
+        """
         days_dict = {}
         for chunk in chunks:
             if chunk.chunk_date not in days_dict:
@@ -54,6 +67,12 @@ class DataManager:
         return days_dict
 
     def add_chunks_to_day(self, date, chunks):
+        """
+        Adds chunks from a list of chunks to a day object.
+        
+        :param date: Date for chunks to be added to.
+        :param chunks: List of chunk objects to add to day.
+        """
         if date not in self.days_dict:
             day_obj = Day(date, chunks)
             self.days_dict[date] = day_obj

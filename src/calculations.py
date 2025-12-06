@@ -50,6 +50,16 @@ def get_total_minutes_for_day(chunks: List[WorkChunk], target_date: date) -> int
 
 
 def calculate_billed_time(selected_date, period, chunk_list):
+    """
+    Calculates the sum of billed minutes within a certain period of time.
+    
+    :param selected_date: The date that the time period is centered around.
+    :param period: Either 'week' or 'month'.
+    :param chunk_list: The list of all recorded chunks. (Taken from the data 
+                                                                        manager)
+                                                        
+    :return billed_minutes: The sum of billed minutes within the selected time period.
+    """
     if period == "week":
         #Find the first and last day of the week
         start, end = get_week_range(selected_date)
