@@ -1,5 +1,3 @@
-import src.calculations
-
 from datetime import date
 
 from PyQt5.QtWidgets import (
@@ -9,10 +7,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import QDate, Qt
 
-from PyQt5.QtGui import QTextCharFormat, QColor
-
 from src.models import WorkChunk, Day
-from src.storage import load_chunks_from_csv, save_chunks_to_csv
+from src.storage import save_chunks_to_csv
 from src.calculations import *
 from src.data_manager import DataManager
 from src.GUI.Panels.stats_panel import StatsPanel
