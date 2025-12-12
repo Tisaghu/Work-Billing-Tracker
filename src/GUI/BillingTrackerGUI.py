@@ -5,7 +5,7 @@ from datetime import date
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget,
     QVBoxLayout, QHBoxLayout, QCalendarWidget,
-    QLabel, QPushButton, QListWidget,  QMessageBox,
+    QLabel, QPushButton, QListWidget,  QMessageBox, QListWidgetItem
 )
 from PyQt5.QtCore import QDate, Qt
 
@@ -114,10 +114,8 @@ class BillingTrackerGUI(QMainWindow):
             QMessageBox.information(self, "No selection", "Select an entry to delete.")
             return
 
-        selected_text = selected_items[0].text()
-        id_to_delete = int(selected_text.split(',')[0].split(':')[1])
-
-        self.data_manager.delete_chunk(id_to_delete)
+        chunk = selected_items[0].data(Qt.UserRole) # Retrieve the stored chunk object
+        self.data_manager.delete_chunk(chunk.chunk_id)
         self.refresh_entries()
 
 
@@ -144,7 +142,10 @@ class BillingTrackerGUI(QMainWindow):
         if self.selected_date in self.data_manager.days_dict:
             day_obj = self.data_manager.days_dict[self.selected_date]
             for chunk in day_obj.chunks:
-                self.entry_list.addItem(f"ID:{chunk.chunk_id}, {chunk.minutes} min - {chunk.description}")
+                item_text = f"{chunk.minutes} min - {chunk.description}"
+                item = QListWidgetItem(item_text)
+                item.setData(Qt.UserRole, chunk) # Store the chunk object
+                self.entry_list.addItem(item)
                 count_for_selected_date += 1
                 billed_today += chunk.minutes
         else:
